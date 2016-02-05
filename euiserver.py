@@ -3,6 +3,7 @@ from flask import Flask, request
 app = Flask(__name__)
 import threading
 import time
+import subprocess
 
 anxiety_level = 0 #Yeah it's a "global"
 anxlock = threading.Lock() #Synchronisation for anxiety_level
@@ -16,8 +17,16 @@ def anxietyscore():
 	elif request.method == 'POST':
 		anxlock.acquire()
 		anxiety_level +=1
+		reactToAnxiety(anxiety_level) 
 		anxlock.release()
 		return str(anxiety_level)
+
+def reactToAnxiety(anxiety_level):
+	'''A simple test with the OS X text-to-speech command say'''
+	if anxiety_level > 20:
+		t = threading.Thread(target=subprocess.call,
+			args=[['say', "You need a break"]]) 
+		t.start()
 
 class AnxietyRemover(threading.Thread):
 	'''Decrease anxiety_level over time'''
