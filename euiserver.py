@@ -1,5 +1,5 @@
 #Using Flask, see flask.pocoo.org
-from flask import Flask, request
+from flask import Flask, request, Response
 app = Flask(__name__)
 import threading
 import time
@@ -13,13 +13,13 @@ def anxietyscore():
 	'''If GET: return the level, if POST: raise level by one and return it'''
 	global anxiety_level
 	if request.method == 'GET':
-		return str(anxiety_level)
+		return Response(str(anxiety_level), mimetype="text/plain")
 	elif request.method == 'POST':
 		anxlock.acquire()
 		anxiety_level +=1
 		reactToAnxiety(anxiety_level) 
 		anxlock.release()
-		return str(anxiety_level)
+		return Response(str(anxiety_level), mimetype="text/plain")
 
 def reactToAnxiety(anxiety_level):
 	'''A simple test with the OS X text-to-speech command say'''
