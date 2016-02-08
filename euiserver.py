@@ -7,6 +7,8 @@ import subprocess
 
 anxiety_level = 0 #Yeah it's a "global"
 anxlock = threading.Lock() #Synchronisation for anxiety_level
+useralerts = ["You need a break", "Seriously, stop.", "You need professional help"]
+alertsactivated = [False for alert in useralerts] 
 
 @app.route('/', methods=['GET','POST'])
 def anxietyscore():
@@ -23,10 +25,12 @@ def anxietyscore():
 
 def reactToAnxiety(anxiety_level):
 	'''A simple test with the OS X text-to-speech command say'''
-	if anxiety_level > 20:
-		t = threading.Thread(target=subprocess.call,
-			args=[['say', "You need a break"]]) 
-		t.start()
+	for i, alerts in enumerate(useralerts):
+		if (anxiety_level > 20+i*10 and not alertsactivated[i]):
+			alertsactivated[i] = True
+			t = threading.Thread(target=subprocess.call,
+				args=[['say', useralerts[i]]]) 
+			t.start()
 
 class AnxietyRemover(threading.Thread):
 	'''Decrease anxiety_level over time'''
@@ -41,6 +45,9 @@ class AnxietyRemover(threading.Thread):
 			anxlock.acquire()
 			if anxiety_level > 0:
 				anxiety_level -=1
+			for i in range(len(useralerts)):
+				if (alertsactivated[i] and anxiety_level < 10+i*10):
+					alertsactivated[i]=False
 			anxlock.release()
 
 
